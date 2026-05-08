@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const authRoutes = require('./routes/auth');
+const authRoutes = require('./middleware/auth');
 const utilisateurRoutes = require('./routes/utilisateurs');
 const siegeRoutes = require('./routes/sieges');
 const seanceRoutes = require('./routes/seances');
