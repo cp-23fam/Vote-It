@@ -1,6 +1,5 @@
 <template>
   <div class="layout">
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-top">
         <div class="brand">
@@ -8,7 +7,7 @@
             <polygon points="20,4 36,32 4,32" stroke="var(--gold)" stroke-width="1.5" fill="none" />
             <circle cx="20" cy="20" r="4" fill="var(--gold)" opacity="0.8" />
           </svg>
-          <span class="brand-name">Vote It</span>
+          <span class="brand-name">Council</span>
         </div>
 
         <nav class="nav">
@@ -17,28 +16,20 @@
           <RouterLink
             v-if="vote.hasActiveVote"
             :to="`/vote/${vote.activeVote.id}`"
-            class="nav-item active-vote-link"
+            class="nav-item live-link"
           >
-            <span class="pulse-dot" />
-            Active Vote
+            <span class="pulse-dot" /> Active Vote
           </RouterLink>
           <RouterLink to="/history" class="nav-item"> <IconClock /> History </RouterLink>
         </nav>
       </div>
 
-      <div class="sidebar-bottom">
-        <div class="ws-status" :class="vote.wsConnected ? 'connected' : 'disconnected'">
-          <span class="ws-dot" />
-          {{ vote.wsConnected ? 'Live' : 'Reconnecting...' }}
-        </div>
-        <div class="user-info">
-          <span class="user-name">{{ auth.user?.username ?? 'President' }}</span>
-          <button class="btn-logout" @click="handleLogout">Logout</button>
-        </div>
+      <div class="ws-status" :class="vote.wsConnected ? 'connected' : 'disconnected'">
+        <span class="ws-dot" />
+        {{ vote.wsConnected ? 'Live' : 'Reconnecting...' }}
       </div>
     </aside>
 
-    <!-- Main -->
     <main class="main">
       <RouterView v-slot="{ Component }">
         <Transition name="fade" mode="out-in">
@@ -51,30 +42,18 @@
 
 <script setup>
 import { onMounted, onUnmounted } from 'vue'
-import { RouterView, RouterLink, useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import { RouterView, RouterLink } from 'vue-router'
 import { useVoteStore } from '../stores/vote'
 
-const auth = useAuthStore()
 const vote = useVoteStore()
-const router = useRouter()
 
 onMounted(() => {
   vote.connectWebSocket()
   vote.fetchActiveVote().catch(() => {})
 })
 
-onUnmounted(() => {
-  vote.disconnectWebSocket()
-})
+onUnmounted(() => vote.disconnectWebSocket())
 
-function handleLogout() {
-  vote.disconnectWebSocket()
-  auth.logout()
-  router.push('/login')
-}
-
-// Icon components inline
 const IconGrid = {
   template: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>`,
 }
@@ -93,14 +72,13 @@ const IconClock = {
 }
 
 .sidebar {
-  width: 220px;
+  width: 210px;
   flex-shrink: 0;
   background: var(--bg-surface);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 0;
   position: sticky;
   top: 0;
   height: 100vh;
@@ -125,7 +103,6 @@ const IconClock = {
   font-weight: 300;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-primary);
 }
 
 .nav {
@@ -152,22 +129,24 @@ const IconClock = {
   background: var(--bg-hover);
   color: var(--text-primary);
 }
-
 .nav-item.router-link-active {
   background: var(--gold-dim);
   color: var(--gold);
 }
 
-.active-vote-link {
-  color: var(--green) !important;
-  position: relative;
+.live-link {
+  color: var(--yes) !important;
+}
+.live-link.router-link-active {
+  background: var(--yes-dim);
+  color: var(--yes) !important;
 }
 
 .pulse-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--green);
+  background: var(--yes);
   animation: pulse 2s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -184,24 +163,18 @@ const IconClock = {
   }
 }
 
-.sidebar-bottom {
-  padding: 16px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .ws-status {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 16px 20px;
   font-size: 11px;
   letter-spacing: 0.06em;
+  border-top: 1px solid var(--border);
 }
 
 .ws-status.connected {
-  color: var(--green);
+  color: var(--yes);
 }
 .ws-status.disconnected {
   color: var(--text-muted);
@@ -216,35 +189,6 @@ const IconClock = {
 
 .ws-status.connected .ws-dot {
   animation: pulse 1.5s ease-in-out infinite;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.user-name {
-  font-size: 11px;
-  color: var(--text-secondary);
-}
-
-.btn-logout {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 3px 8px;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  cursor: pointer;
-  transition: all var(--transition);
-  letter-spacing: 0.06em;
-}
-
-.btn-logout:hover {
-  border-color: var(--red);
-  color: var(--red);
 }
 
 .main {

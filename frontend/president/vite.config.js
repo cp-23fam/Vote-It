@@ -5,14 +5,8 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true
-      },
-      '/ws': {
-        target: 'ws://localhost:3000',
-        ws: true
-      }
-    }
-  }
+      '/api': { target: 'http://localhost:3000', changeOrigin: true },
+      '/ws': { target: 'ws://localhost:3000', ws: true },
+    },
+  },
 })
