@@ -1,107 +1,95 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-const OPTIONS = ['Yes', 'No', 'Abstain']
-
 export const useVoteStore = defineStore('vote', () => {
-  const activeVote = ref(null)
-  const history = ref([])
-  const ws = ref(null)
+  const vote = ref(null) // current vote object
+  const results = ref({}) // live { Yes: n, No: n, Abstain: n }
+  const timerLeft = ref(0)
   const wsConnected = ref(false)
-  const timerRemaining = ref(0)
+  let ws = null
   let timerInterval = null
 
-  const hasActiveVote = computed(() => !!activeVote.value)
+  const total = computed(() => Object.values(results.value).reduce((a, b) => a + b, 0))
 
-  const totalVotes = computed(() => {
-    if (!activeVote.value?.results) return 0
-    return Object.values(activeVote.value.results).reduce((a, b) => a + b, 0)
-  })
-
-  // WebSocket
-  function connectWebSocket() {
-    if (ws.value?.readyState === WebSocket.OPEN) return
-    const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-    ws.value = new WebSocket(`${protocol}://${location.host}/ws`)
-
-    ws.value.onopen = () => {
+  // ── WebSocket ──────────────────────────────────────────────
+  function connect() {
+    if (ws?.readyState === WebSocket.OPEN) return
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws'
+    ws = new WebSocket(`${proto}://${location.host}/ws`)
+    ws.onopen = () => {
       wsConnected.value = true
     }
-    ws.value.onclose = () => {
+    ws.onclose = () => {
       wsConnected.value = false
-      setTimeout(connectWebSocket, 3000)
+      setTimeout(connect, 3000)
     }
-    ws.value.onerror = () => {
-      wsConnected.value = false
-    }
-    ws.value.onmessage = (e) => handleWsMessage(JSON.parse(e.data))
-  }
-
-  function handleWsMessage(msg) {
-    if (msg.type === 'VOTE_UPDATE' && activeVote.value?.id === msg.vote_id) {
-      activeVote.value.results = msg.results
-    }
-    if (msg.type === 'VOTE_CLOSED' && activeVote.value?.id === msg.vote_id) {
-      activeVote.value.status = 'closed'
-      activeVote.value.results = msg.results
-      clearTimer()
+    ws.onmessage = ({ data }) => {
+      const msg = JSON.parse(data)
+      if (msg.type === 'VOTE_UPDATE' && vote.value?.id === msg.vote_id) {
+        results.value = msg.results
+      }
+      if (msg.type === 'VOTE_CLOSED' && vote.value?.id === msg.vote_id) {
+        results.value = msg.results
+        vote.value.status = 'closed'
+        stopTimer()
+      }
     }
   }
 
-  function disconnectWebSocket() {
-    ws.value?.close()
-    ws.value = null
+  function disconnect() {
+    ws?.close()
+    ws = null
   }
 
-  // Timer
+  // ── Timer ──────────────────────────────────────────────────
   function startTimer(seconds) {
-    timerRemaining.value = seconds
-    clearTimer()
+    timerLeft.value = seconds
+    stopTimer()
     timerInterval = setInterval(() => {
-      if (timerRemaining.value > 0) timerRemaining.value--
-      else clearTimer()
+      if (timerLeft.value > 0) timerLeft.value--
+      else stopTimer()
     }, 1000)
   }
 
-  function clearTimer() {
-    if (timerInterval) {
-      clearInterval(timerInterval)
-      timerInterval = null
-    }
+  function stopTimer() {
+    clearInterval(timerInterval)
+    timerInterval = null
   }
 
-  // API
-  async function createVote(payload) {
+  // ── API ────────────────────────────────────────────────────
+  async function createVote(title, duration) {
     const res = await fetch('/api/votes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...payload, options: OPTIONS }),
+      body: JSON.stringify({ title, duration }),
     })
     if (!res.ok) throw new Error((await res.json()).message)
     const data = await res.json()
-    activeVote.value = data.vote
-    if (data.vote.duration) startTimer(data.vote.duration)
+    vote.value = data.vote
+    results.value = { Yes: 0, No: 0, Abstain: 0 }
+    if (duration) startTimer(duration)
     return data.vote
   }
 
-  async function closeVote(voteId) {
-    const res = await fetch(`/api/votes/${voteId}/close`, { method: 'POST' })
+  async function closeVote() {
+    const res = await fetch(`/api/votes/${vote.value.id}/close`, { method: 'POST' })
     if (!res.ok) throw new Error((await res.json()).message)
     const data = await res.json()
-    activeVote.value = data.vote
-    clearTimer()
+    vote.value = data.vote
+    results.value = data.vote.results
+    stopTimer()
     return data.vote
   }
 
-  async function fetchActiveVote() {
+  async function fetchActive() {
     const res = await fetch('/api/votes/active')
     if (res.status === 404) {
-      activeVote.value = null
+      vote.value = null
       return null
     }
-    if (!res.ok) throw new Error('Failed to fetch active vote')
     const data = await res.json()
-    activeVote.value = data.vote
+    vote.value = data.vote
+    results.value = data.vote.results ?? { Yes: 0, No: 0, Abstain: 0 }
     if (data.vote.status === 'open' && data.vote.duration) {
       const elapsed = Math.floor((Date.now() - new Date(data.vote.started_at)) / 1000)
       startTimer(Math.max(0, data.vote.duration - elapsed))
@@ -109,34 +97,16 @@ export const useVoteStore = defineStore('vote', () => {
     return data.vote
   }
 
-  async function fetchHistory() {
-    const res = await fetch('/api/votes/history')
-    if (!res.ok) throw new Error('Failed to fetch history')
-    const data = await res.json()
-    history.value = data.votes
-    return data.votes
-  }
-
-  async function fetchVoteById(id) {
-    const res = await fetch(`/api/votes/${id}`)
-    if (!res.ok) throw new Error('Vote not found')
-    return (await res.json()).vote
-  }
-
   return {
-    activeVote,
-    history,
+    vote,
+    results,
+    timerLeft,
     wsConnected,
-    timerRemaining,
-    hasActiveVote,
-    totalVotes,
-    OPTIONS,
-    connectWebSocket,
-    disconnectWebSocket,
+    total,
+    connect,
+    disconnect,
     createVote,
     closeVote,
-    fetchActiveVote,
-    fetchHistory,
-    fetchVoteById,
+    fetchActive,
   }
 })

@@ -3,37 +3,31 @@
     <header class="page-header">
       <div>
         <h1 class="page-title">Dashboard</h1>
-        <p class="page-sub">Council voting panel</p>
+        <p class="page-sub">Welcome back, {{ auth.user?.username ?? 'President' }}</p>
       </div>
       <RouterLink to="/vote/new" class="btn-primary">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Start Vote
       </RouterLink>
     </header>
 
-    <!-- Active vote banner -->
+    <!-- Active Vote Banner -->
     <Transition name="slide-up">
       <div v-if="vote.hasActiveVote" class="active-banner">
         <div class="banner-left">
           <span class="live-badge">LIVE</span>
           <div>
             <p class="banner-title">{{ vote.activeVote.title }}</p>
-            <p class="banner-meta">{{ vote.totalVotes }} votes cast</p>
+            <p class="banner-meta">
+              {{ vote.totalVotes }} votes · {{ vote.participationRate }}% participation
+            </p>
           </div>
         </div>
         <div class="banner-right">
           <TimerDisplay v-if="vote.timerRemaining > 0" :seconds="vote.timerRemaining" />
-          <RouterLink :to="`/vote/${vote.activeVote.id}`" class="btn-go">Manage →</RouterLink>
+          <RouterLink :to="`/vote/${vote.activeVote.id}`" class="btn-go">
+            Manage →
+          </RouterLink>
         </div>
       </div>
     </Transition>
@@ -46,72 +40,70 @@
       </div>
       <div class="stat-card">
         <span class="stat-label">Status</span>
-        <span class="stat-value" :class="vote.hasActiveVote ? 'yes' : 'muted'">
+        <span class="stat-value" :class="vote.hasActiveVote ? 'green' : 'muted'">
           {{ vote.hasActiveVote ? 'Active' : 'Idle' }}
         </span>
       </div>
       <div class="stat-card">
         <span class="stat-label">Connection</span>
-        <span class="stat-value" :class="vote.wsConnected ? 'yes' : 'no'">
+        <span class="stat-value" :class="vote.wsConnected ? 'green' : 'red'">
           {{ vote.wsConnected ? 'Live' : 'Offline' }}
         </span>
       </div>
     </div>
 
-    <!-- Recent history -->
-    <section>
+    <!-- Recent History -->
+    <section class="section">
       <h2 class="section-title">Recent Votes</h2>
       <div v-if="loading" class="empty">Loading...</div>
-      <div v-else-if="vote.history.length === 0" class="empty">No votes yet.</div>
+      <div v-else-if="recentHistory.length === 0" class="empty">No votes yet.</div>
       <div v-else class="history-list">
         <RouterLink
-          v-for="v in vote.history.slice(0, 5)"
+          v-for="v in recentHistory"
           :key="v.id"
           :to="`/vote/${v.id}/results`"
           class="history-item"
         >
-          <div>
-            <p class="h-title">{{ v.title }}</p>
-            <p class="h-date">{{ formatDate(v.closed_at || v.created_at) }}</p>
+          <div class="history-left">
+            <span class="history-title">{{ v.title }}</span>
+            <span class="history-date">{{ formatDate(v.closed_at || v.created_at) }}</span>
           </div>
-          <div class="h-right">
-            <span class="h-count">{{ v.total_votes }} votes</span>
-            <span class="h-arrow">→</span>
+          <div class="history-right">
+            <span class="history-count">{{ v.total_votes }} votes</span>
+            <span class="history-arrow">→</span>
           </div>
         </RouterLink>
       </div>
       <RouterLink v-if="vote.history.length > 5" to="/history" class="view-all">
-        View all →
+        View all history →
       </RouterLink>
     </section>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 import { useVoteStore } from '../stores/vote'
 import TimerDisplay from '../components/TimerDisplay.vue'
 
+const auth = useAuthStore()
 const vote = useVoteStore()
 const loading = ref(false)
 
-function formatDate(d) {
-  if (!d) return '—'
-  return new Date(d).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+const recentHistory = computed(() => vote.history.slice(0, 5))
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—'
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
   })
 }
 
 onMounted(async () => {
   loading.value = true
-  try {
-    await vote.fetchHistory()
-  } catch {}
+  try { await vote.fetchHistory() } catch {}
   loading.value = false
 })
 </script>
@@ -119,7 +111,7 @@ onMounted(async () => {
 <style scoped>
 .dashboard {
   padding: 40px;
-  max-width: 860px;
+  max-width: 900px;
 }
 
 .page-header {
@@ -134,7 +126,9 @@ onMounted(async () => {
   font-size: 28px;
   font-weight: 300;
   letter-spacing: 0.06em;
+  color: var(--text-primary);
 }
+
 .page-sub {
   font-size: 12px;
   color: var(--text-muted);
@@ -155,14 +149,16 @@ onMounted(async () => {
   letter-spacing: 0.08em;
   transition: all var(--transition);
 }
+
 .btn-primary:hover {
   background: #d4b05a;
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(201, 168, 76, 0.3);
+  box-shadow: 0 4px 16px rgba(201,168,76,0.3);
 }
 
+/* Active banner */
 .active-banner {
-  background: var(--yes-dim);
+  background: var(--green-dim);
   border: 1px solid rgba(76, 175, 130, 0.25);
   border-radius: var(--radius-lg);
   padding: 20px 24px;
@@ -183,21 +179,17 @@ onMounted(async () => {
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.14em;
-  color: var(--yes);
+  color: var(--green);
   background: rgba(76, 175, 130, 0.15);
   border: 1px solid rgba(76, 175, 130, 0.3);
   padding: 3px 8px;
   border-radius: 3px;
   animation: pulse-text 2s ease-in-out infinite;
 }
+
 @keyframes pulse-text {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 .banner-title {
@@ -205,6 +197,7 @@ onMounted(async () => {
   color: var(--text-primary);
   margin-bottom: 2px;
 }
+
 .banner-meta {
   font-size: 11px;
   color: var(--text-secondary);
@@ -218,7 +211,7 @@ onMounted(async () => {
 
 .btn-go {
   padding: 8px 16px;
-  background: var(--yes);
+  background: var(--green);
   color: #0d0f12;
   border-radius: var(--radius);
   text-decoration: none;
@@ -226,10 +219,10 @@ onMounted(async () => {
   font-weight: 500;
   transition: all var(--transition);
 }
-.btn-go:hover {
-  background: #5ec494;
-}
 
+.btn-go:hover { background: #5ec494; }
+
+/* Stats */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -253,22 +246,20 @@ onMounted(async () => {
   text-transform: uppercase;
   color: var(--text-muted);
 }
+
 .stat-value {
   font-family: var(--font-display);
   font-size: 28px;
   font-weight: 300;
   color: var(--text-primary);
 }
-.stat-value.yes {
-  color: var(--yes);
-}
-.stat-value.no {
-  color: var(--no);
-}
-.stat-value.muted {
-  color: var(--text-muted);
-}
 
+.stat-value.green { color: var(--green); }
+.stat-value.red { color: var(--red); }
+.stat-value.muted { color: var(--text-muted); }
+
+/* Section */
+.section { }
 .section-title {
   font-size: 11px;
   letter-spacing: 0.14em;
@@ -276,8 +267,10 @@ onMounted(async () => {
   color: var(--text-muted);
   margin-bottom: 12px;
 }
+
 .empty {
   color: var(--text-muted);
+  font-size: 13px;
   padding: 20px 0;
 }
 
@@ -298,31 +291,42 @@ onMounted(async () => {
   text-decoration: none;
   transition: all var(--transition);
 }
+
 .history-item:hover {
   background: var(--bg-hover);
   border-color: var(--border-strong);
 }
 
-.h-title {
+.history-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-title {
   font-size: 13px;
   color: var(--text-primary);
 }
-.h-date {
+
+.history-date {
   font-size: 11px;
   color: var(--text-muted);
-  margin-top: 2px;
 }
-.h-right {
+
+.history-right {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-.h-count {
+
+.history-count {
   font-size: 12px;
   color: var(--text-secondary);
 }
-.h-arrow {
+
+.history-arrow {
   color: var(--text-muted);
+  font-size: 14px;
 }
 
 .view-all {
@@ -332,7 +336,6 @@ onMounted(async () => {
   color: var(--gold);
   text-decoration: none;
 }
-.view-all:hover {
-  text-decoration: underline;
-}
+
+.view-all:hover { text-decoration: underline; }
 </style>
