@@ -1,16 +1,20 @@
+require('dotenv').config({ quiet: true })
 const express = require('express');
-const router = express.Router();
+const app = express();
 
-const authRoutes = require('./middleware/auth');
 const utilisateurRoutes = require('./routes/utilisateurs');
 const siegeRoutes = require('./routes/sieges');
 const seanceRoutes = require('./routes/seances');
 const voteRoutes = require('./routes/votes');
+const bodyParser = require('body-parser');
 
-router.use('/auth', authRoutes);
-router.use('/utilisateurs', utilisateurRoutes);
-router.use('/sieges', siegeRoutes);
-router.use('/seances', seanceRoutes);
-router.use('/votes', voteRoutes);
+app.use(bodyParser.json())
 
-module.exports = router;
+app.use('/utilisateurs', utilisateurRoutes);
+app.use('/sieges', siegeRoutes);
+app.use('/seances', seanceRoutes);
+app.use('/votes', voteRoutes);
+
+app.listen(3000, () => {
+    console.log("listening on http://localhost:3000");
+})

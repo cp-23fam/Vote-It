@@ -8,7 +8,7 @@ const db = require('../db'); // ton client SQL (pg, mysql2, etc.)
  * POST /auth/login
  * Connexion d'un utilisateur (mot de passe hashé en DB)
  */
-router.post('/login', async (req, res) => {
+exports.login = async (req, res) => {
   const { email, motDePasse } = req.body;
 
   if (!email || !motDePasse) {
@@ -52,6 +52,4 @@ router.post('/login', async (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur.' });
   }
-});
-
-module.exports = router;
+};

@@ -1,15 +1,15 @@
 const mysql = require('mysql2/promise');
 
 const pool = mysql.createPool({
-  host:     process.env.DB_HOST,
-  port:     parseInt(process.env.DB_PORT || '3306'),
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT || '3306'),
   database: process.env.DB_NAME,
-  user:     process.env.DB_USER,
+  user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  ssl:      process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
   waitForConnections: true,
-  connectionLimit:    10,
-  queueLimit:         0,
+  connectionLimit: 10,
+  queueLimit: 0,
 });
 
 // Vérifie la connexion au démarrage
@@ -19,6 +19,8 @@ const pool = mysql.createPool({
     console.log('✅ Connecté à la base de données MySQL.');
     conn.release();
   } catch (err) {
+    console.log(err);
+
     console.error('❌ Impossible de se connecter à MySQL :', err.message);
     process.exit(-1);
   }

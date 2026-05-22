@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const db = require('../db');
-const { authentifier } = require('../middleware/auth');
+const { login } = require('../middleware/auth');
 
 /**
  * GET /utilisateurs
  * Liste tous les utilisateurs
  */
-router.get('/', authentifier, async (req, res) => {
+router.get('/', login, async (req, res) => {
   try {
     const result = await db.query(
       'SELECT id, nom, prenom, email FROM utilisateur ORDER BY nom'
@@ -24,7 +24,7 @@ router.get('/', authentifier, async (req, res) => {
  * GET /utilisateurs/:id
  * Récupère un utilisateur par son ID
  */
-router.get('/:id', authentifier, async (req, res) => {
+router.get('/:id', login, async (req, res) => {
   try {
     const result = await db.query(
       'SELECT id, nom, prenom, email FROM utilisateur WHERE id = $1',
@@ -81,7 +81,7 @@ router.post('/', async (req, res) => {
  * PUT /utilisateurs/:id
  * Met à jour un utilisateur
  */
-router.put('/:id', authentifier, async (req, res) => {
+router.put('/:id', login, async (req, res) => {
   const { nom, prenom, email, motDePasse } = req.body;
 
   try {
@@ -116,7 +116,7 @@ router.put('/:id', authentifier, async (req, res) => {
  * DELETE /utilisateurs/:id
  * Supprime un utilisateur
  */
-router.delete('/:id', authentifier, async (req, res) => {
+router.delete('/:id', login, async (req, res) => {
   try {
     const result = await db.query(
       'DELETE FROM utilisateur WHERE id = $1 RETURNING id',

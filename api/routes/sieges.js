@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { authentifier } = require('../middleware/auth');
+const { login } = require('../middleware/auth');
 
 /**
  * GET /sieges
  * Liste tous les sièges
  */
-router.get('/', authentifier, async (req, res) => {
+router.get('/', login, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT s.id, s.place, s.vote, s.seance_id,
@@ -27,7 +27,7 @@ router.get('/', authentifier, async (req, res) => {
  * GET /sieges/:id
  * Récupère un siège par son ID
  */
-router.get('/:id', authentifier, async (req, res) => {
+router.get('/:id', login, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT s.id, s.place, s.vote, s.seance_id,
@@ -53,7 +53,7 @@ router.get('/:id', authentifier, async (req, res) => {
  * POST /sieges
  * Crée un siège (sans utilisateur assigné par défaut)
  */
-router.post('/', authentifier, async (req, res) => {
+router.post('/', login, async (req, res) => {
   const { place, seanceId } = req.body;
 
   if (!place || !seanceId) {
@@ -76,7 +76,7 @@ router.post('/', authentifier, async (req, res) => {
  * POST /sieges/:id/assigner
  * Enregistre un utilisateur sur un siège
  */
-router.post('/:id/assigner', authentifier, async (req, res) => {
+router.post('/:id/assigner', login, async (req, res) => {
   const { utilisateurId } = req.body;
   const siegeId = req.params.id;
 
@@ -123,7 +123,7 @@ router.post('/:id/assigner', authentifier, async (req, res) => {
  * DELETE /sieges/:id/assigner
  * Retire un utilisateur d'un siège
  */
-router.delete('/:id/assigner', authentifier, async (req, res) => {
+router.delete('/:id/assigner', login, async (req, res) => {
   try {
     const result = await db.query(
       `UPDATE siege SET utilisateur_id = NULL, vote = NULL WHERE id = $1
@@ -146,7 +146,7 @@ router.delete('/:id/assigner', authentifier, async (req, res) => {
  * PUT /sieges/:id
  * Met à jour un siège
  */
-router.put('/:id', authentifier, async (req, res) => {
+router.put('/:id', login, async (req, res) => {
   const { place } = req.body;
 
   try {
@@ -171,7 +171,7 @@ router.put('/:id', authentifier, async (req, res) => {
  * DELETE /sieges/:id
  * Supprime un siège
  */
-router.delete('/:id', authentifier, async (req, res) => {
+router.delete('/:id', login, async (req, res) => {
   try {
     const result = await db.query(
       'DELETE FROM siege WHERE id = $1 RETURNING id',

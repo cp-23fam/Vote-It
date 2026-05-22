@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { authentifier } = require('../middleware/auth');
+const { login } = require('../middleware/auth');
 
 /**
  * POST /votes
@@ -9,7 +9,7 @@ const { authentifier } = require('../middleware/auth');
  * Body: { vote: 'oui' | 'non' | 'neutre' }
  * L'utilisateur est identifié via le token JWT
  */
-router.post('/', authentifier, async (req, res) => {
+router.post('/', login, async (req, res) => {
   const { vote } = req.body;
   const utilisateurId = req.utilisateur.id; // injecté par le middleware JWT
 
