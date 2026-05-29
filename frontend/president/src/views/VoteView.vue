@@ -1,22 +1,22 @@
 <template>
   <div class="page">
-    <!-- ── FORM: no active vote ─────────────────────────── -->
-    <div v-if="!store.vote" class="card form-card">
-      <h1 class="title">Start a vote</h1>
+    <!-- ── FORMULAIRE : pas de vote actif ─────────────────────── -->
+    <div v-if="!store.hasActiveVote" class="card form-card">
+      <h1 class="title">Démarrer un vote</h1>
 
       <div class="field">
         <label>Motion</label>
         <input
           v-model="title"
           type="text"
-          placeholder="e.g. Approval of the 2025 budget"
+          placeholder="ex. Approbation du budget 2025"
           maxlength="200"
           :disabled="loading"
         />
       </div>
 
       <div class="field">
-        <label>Duration</label>
+        <label>Durée</label>
         <div class="chips">
           <button
             v-for="p in presets"
@@ -35,60 +35,70 @@
       <p v-if="error" class="error">{{ error }}</p>
 
       <button class="btn-launch" :disabled="loading || !title.trim()" @click="launch">
-        <span v-if="!loading">Launch</span>
+        <span v-if="!loading">Lancer</span>
         <span v-else class="spinner" />
       </button>
     </div>
 
-    <!-- ── LIVE: vote in progress ───────────────────────── -->
+    <!-- ── VOTE EN COURS ──────────────────────────────────────── -->
     <div v-else class="card live-card">
       <div class="live-header">
         <div>
-          <span class="live-badge">LIVE</span>
-          <h2 class="live-title">{{ store.vote.title }}</h2>
+          <span class="live-badge">EN COURS</span>
+          <h2 class="live-title">{{ store.vote.question }}</h2>
         </div>
         <div class="timer" :class="{ urgent: store.timerLeft <= 30 && store.timerLeft > 0 }">
           {{ formattedTime }}
         </div>
       </div>
 
-      <!-- Progress bars -->
+      <!-- Indicateur WebSocket -->
+      <div class="ws-row">
+        <span class="ws-dot" :class="store.wsConnected ? 'on' : 'off'" />
+        <span class="ws-label">{{
+          store.wsConnected ? 'Connecté en temps réel' : 'Reconnexion…'
+        }}</span>
+      </div>
+
+      <!-- Barres de progression -->
       <div class="bars">
-        <div v-for="opt in OPTIONS" :key="opt" class="bar-row">
+        <div v-for="opt in OPTIONS" :key="opt.key" class="bar-row">
           <div class="bar-label">
-            <span :class="`dot dot-${opt.toLowerCase()}`" />
-            {{ opt }}
+            <span :class="`dot dot-${opt.key}`" />
+            {{ opt.label }}
           </div>
           <div class="bar-track">
             <div
               class="bar-fill"
-              :class="`fill-${opt.toLowerCase()}`"
-              :style="{ width: pct(opt) + '%' }"
+              :class="`fill-${opt.key}`"
+              :style="{ width: pct(opt.key) + '%' }"
             />
           </div>
           <div class="bar-count">
-            {{ store.results[opt] ?? 0 }}
-            <span class="bar-pct">({{ pct(opt) }}%)</span>
+            {{ store.results[opt.key] ?? 0 }}
+            <span class="bar-pct">({{ pct(opt.key) }}%)</span>
           </div>
         </div>
       </div>
 
       <div class="live-footer">
-        <span class="total-label"
-          >{{ store.total }} vote{{ store.total !== 1 ? 's' : '' }} cast</span
-        >
+        <span class="total-label">
+          {{ store.total }} vote{{ store.total !== 1 ? 's' : '' }} exprimé{{
+            store.total !== 1 ? 's' : ''
+          }}
+        </span>
         <button
-          v-if="store.vote.status === 'open'"
+          v-if="!store.vote?.closed"
           class="btn-close"
           :disabled="closing"
           @click="handleClose"
         >
-          <span v-if="!closing">Close vote</span>
+          <span v-if="!closing">Clore le vote</span>
           <span v-else class="spinner spinner-light" />
         </button>
-        <RouterLink v-else :to="`/results/${store.vote.id}`" class="btn-results"
-          >View results →</RouterLink
-        >
+        <RouterLink v-else :to="`/results/${store.vote.id}`" class="btn-results">
+          Voir les résultats →
+        </RouterLink>
       </div>
     </div>
   </div>
@@ -96,18 +106,23 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import { useVoteStore } from '../stores/vote'
 
 const store = useVoteStore()
-const router = useRouter()
 
-const OPTIONS = ['Yes', 'No', 'Abstain']
+// Oui / Non / Neutre (clés en minuscules = valeurs BDD)
+const OPTIONS = [
+  { key: 'oui', label: 'Oui' },
+  { key: 'non', label: 'Non' },
+  { key: 'neutre', label: 'Neutre' },
+]
+
 const presets = [
-  { label: '30s', value: 30 },
-  { label: '1 min', value: 60 },
   { label: '2 min', value: 120 },
   { label: '5 min', value: 300 },
+  { label: '7 min', value: 7 * 60 },
+  { label: '10 min', value: 600 },
 ]
 
 const title = ref('')
@@ -116,6 +131,7 @@ const loading = ref(false)
 const closing = ref(false)
 const error = ref('')
 
+// ── Timer affiché ────────────────────────────────────────────
 const formattedTime = computed(() => {
   const s = store.timerLeft
   const mm = String(Math.floor(s / 60)).padStart(2, '0')
@@ -123,16 +139,20 @@ const formattedTime = computed(() => {
   return `${mm}:${ss}`
 })
 
-function pct(opt) {
+// ── Pourcentage d'une option ──────────────────────────────────
+function pct(key) {
   if (!store.total) return 0
-  return Math.round(((store.results[opt] ?? 0) / store.total) * 100)
+  return Math.round(((store.results[key] ?? 0) / store.total) * 100)
 }
 
+// ── Actions ──────────────────────────────────────────────────
 async function launch() {
   loading.value = true
   error.value = ''
   try {
     await store.createVote(title.value.trim(), duration.value)
+    // L'état est mis à jour via VOTE_STARTED reçu par le WebSocket
+    title.value = ''
   } catch (e) {
     error.value = e.message
   } finally {
@@ -144,7 +164,7 @@ async function handleClose() {
   closing.value = true
   try {
     await store.closeVote()
-    router.push(`/results/${store.vote.id}`)
+    // L'état est mis à jour via VOTE_CLOSED reçu par le WebSocket
   } catch (e) {
     error.value = e.message
   } finally {
@@ -152,8 +172,10 @@ async function handleClose() {
   }
 }
 
+// ── Cycle de vie ──────────────────────────────────────────────
 onMounted(() => {
   store.connect()
+  // Fallback REST si le WS est lent à envoyer ROOM_STATE
   store.fetchActive().catch(() => {})
 })
 
@@ -180,7 +202,7 @@ onUnmounted(() => store.disconnect())
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
-/* ── Form ── */
+/* ── Formulaire ── */
 .title {
   font-size: 20px;
   font-weight: 600;
@@ -288,13 +310,13 @@ input:disabled {
   opacity: 0.85;
 }
 
-/* ── Live ── */
+/* ── Vote en cours ── */
 .live-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .live-badge {
@@ -338,7 +360,31 @@ input:disabled {
   animation: blink 1s ease-in-out infinite;
 }
 
-/* Bars */
+/* Indicateur WS */
+.ws-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.ws-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.ws-dot.on {
+  background: var(--yes);
+  animation: blink 2s ease-in-out infinite;
+}
+.ws-dot.off {
+  background: #888;
+}
+.ws-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Barres */
 .bars {
   display: flex;
   flex-direction: column;
@@ -368,13 +414,13 @@ input:disabled {
   border-radius: 50%;
   flex-shrink: 0;
 }
-.dot-yes {
+.dot-oui {
   background: var(--yes);
 }
-.dot-no {
+.dot-non {
   background: var(--no);
 }
-.dot-abstain {
+.dot-neutre {
   background: var(--abstain);
 }
 
@@ -391,18 +437,18 @@ input:disabled {
   border-radius: 5px;
   transition: width 500ms cubic-bezier(0.4, 0, 0.2, 1);
 }
-.fill-yes {
+.fill-oui {
   background: var(--yes);
 }
-.fill-no {
+.fill-non {
   background: var(--no);
 }
-.fill-abstain {
+.fill-neutre {
   background: var(--abstain);
 }
 
 .bar-count {
-  width: 72px;
+  width: 80px;
   font-size: 13px;
   font-weight: 600;
   text-align: right;
@@ -442,7 +488,7 @@ input:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 100px;
+  min-width: 110px;
   height: 38px;
 }
 .btn-close:hover:not(:disabled) {
@@ -467,7 +513,6 @@ input:disabled {
   opacity: 0.8;
 }
 
-/* Spinner */
 .spinner {
   width: 16px;
   height: 16px;
@@ -480,7 +525,6 @@ input:disabled {
   border-color: rgba(255, 255, 255, 0.3);
   border-top-color: white;
 }
-
 @keyframes spin {
   to {
     transform: rotate(360deg);
