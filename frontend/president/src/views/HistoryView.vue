@@ -3,7 +3,7 @@
     <header class="page-header">
       <div>
         <h1 class="page-title">Vote History</h1>
-        <p class="page-sub">All past vote-it votes</p>
+        <p class="page-sub">All past council votes</p>
       </div>
     </header>
 
@@ -28,9 +28,7 @@
               <span class="s-lbl">votes</span>
             </span>
             <span class="card-stat" v-if="v.eligible_voters">
-              <span class="s-val"
-                >{{ Math.round((v.total_votes / v.eligible_voters) * 100) }}%</span
-              >
+              <span class="s-val">{{ Math.round((v.total_votes / v.eligible_voters) * 100) }}%</span>
               <span class="s-lbl">participation</span>
             </span>
           </div>
@@ -52,54 +50,33 @@ const loading = ref(false)
 function formatDate(d) {
   if (!d) return '—'
   return new Date(d).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
   })
 }
 
 onMounted(async () => {
   loading.value = true
-  try {
-    await vote.fetchHistory()
-  } catch {}
+  try { await vote.fetchHistory() } catch {}
   loading.value = false
 })
 </script>
 
 <style scoped>
-.history-page {
-  padding: 40px;
-  max-width: 800px;
-}
+.history-page { padding: 40px; max-width: 800px; }
 
-.page-header {
-  margin-bottom: 32px;
-}
+.page-header { margin-bottom: 32px; }
 .page-title {
   font-family: var(--font-display);
   font-size: 28px;
   font-weight: 300;
   letter-spacing: 0.06em;
 }
-.page-sub {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
+.page-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 
-.empty {
-  color: var(--text-muted);
-  padding: 20px 0;
-}
+.empty { color: var(--text-muted); padding: 20px 0; }
 
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+.list { display: flex; flex-direction: column; gap: 6px; }
 
 .history-card {
   display: flex;
@@ -164,8 +141,5 @@ onMounted(async () => {
   text-transform: uppercase;
 }
 
-.card-arrow {
-  color: var(--text-muted);
-  font-size: 16px;
-}
+.card-arrow { color: var(--text-muted); font-size: 16px; }
 </style>

@@ -5,12 +5,12 @@
     <div class="login-card">
       <div class="crest">
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-          <polygon points="20,4 36,32 4,32" stroke="var(--gold)" stroke-width="1.5" fill="none" />
-          <circle cx="20" cy="20" r="5" fill="var(--gold)" opacity="0.7" />
+          <polygon points="20,4 36,32 4,32" stroke="var(--gold)" stroke-width="1.5" fill="none"/>
+          <circle cx="20" cy="20" r="5" fill="var(--gold)" opacity="0.7"/>
         </svg>
       </div>
 
-      <h1 class="title">Vote-It</h1>
+      <h1 class="title">Council</h1>
       <p class="subtitle">President Panel</p>
 
       <form class="form" @submit.prevent="handleLogin">
@@ -108,21 +108,13 @@ async function handleLogin() {
   flex-direction: column;
   align-items: center;
   gap: 0;
-  box-shadow:
-    0 0 80px rgba(201, 168, 76, 0.04),
-    0 24px 48px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 80px rgba(201, 168, 76, 0.04), 0 24px 48px rgba(0,0,0,0.4);
   animation: cardIn 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 @keyframes cardIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .crest {
@@ -239,15 +231,11 @@ input:disabled {
 .spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(13, 15, 18, 0.3);
+  border: 2px solid rgba(13,15,18,0.3);
   border-top-color: #0d0f12;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
