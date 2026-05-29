@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Council — Room View</title>
+    <title>Council — Room Ba94</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
     <style>
         *,
@@ -21,23 +21,17 @@
             --border: rgba(255, 255, 255, 0.08);
             --text: rgba(255, 255, 255, 0.9);
             --text-muted: rgba(255, 255, 255, 0.35);
-
-            --empty: #2a2d35;
-            --empty-border: rgba(255, 255, 255, 0.1);
-            --present: #3a3d48;
-            --present-border: rgba(255, 255, 255, 0.2);
-
             --yes: #22a06b;
-            --yes-bg: rgba(34, 160, 107, 0.18);
-            --yes-border: rgba(34, 160, 107, 0.5);
-
+            --yes-bg: rgba(34, 160, 107, 0.2);
+            --yes-border: rgba(34, 160, 107, 0.55);
             --no: #d93636;
-            --no-bg: rgba(217, 54, 54, 0.18);
-            --no-border: rgba(217, 54, 54, 0.5);
-
+            --no-bg: rgba(217, 54, 54, 0.2);
+            --no-border: rgba(217, 54, 54, 0.55);
             --abstain: #4a7fd4;
-            --abstain-bg: rgba(74, 127, 212, 0.18);
-            --abstain-border: rgba(74, 127, 212, 0.5);
+            --abstain-bg: rgba(74, 127, 212, 0.2);
+            --abstain-border: rgba(74, 127, 212, 0.55);
+            --empty: #22252d;
+            --present: #32363f;
         }
 
         body {
@@ -49,39 +43,48 @@
             flex-direction: column;
         }
 
-        /* ── Header ── */
         .header {
-            padding: 16px 28px;
+            padding: 14px 24px;
             border-bottom: 1px solid var(--border);
+            background: var(--surface);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: var(--surface);
             flex-shrink: 0;
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
+        }
+
+        .room-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-muted);
         }
 
         .vote-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
         }
 
-        .vote-waiting {
-            font-size: 14px;
+        .ws-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
             color: var(--text-muted);
         }
 
         .ws-dot {
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
-            background: #555;
-            transition: background 300ms;
+            background: #444;
         }
 
         .ws-dot.connected {
@@ -90,7 +93,7 @@
         }
 
         .ws-dot.disconnected {
-            background: #d93636;
+            background: var(--no);
         }
 
         @keyframes pulse {
@@ -108,38 +111,36 @@
         .legend {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 12px;
+            gap: 5px;
+            font-size: 11px;
             color: var(--text-muted);
         }
 
         .legend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 3px;
+            width: 9px;
+            height: 9px;
+            border-radius: 2px;
         }
 
-        /* ── Tally bar ── */
         .tally {
-            padding: 12px 28px;
+            padding: 10px 24px;
             background: var(--surface);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 20px;
-            flex-shrink: 0;
+            gap: 16px;
         }
 
         .tally-bar-wrap {
             flex: 1;
-            height: 6px;
-            background: var(--empty);
+            height: 5px;
+            background: #2a2d35;
             border-radius: 3px;
             overflow: hidden;
             display: flex;
@@ -152,70 +153,59 @@
 
         .tally-counts {
             display: flex;
-            gap: 16px;
-            flex-shrink: 0;
+            gap: 20px;
         }
 
         .tally-count {
             display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            font-weight: 500;
+            align-items: baseline;
+            gap: 5px;
+            font-size: 12px;
         }
 
         .tally-num {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
         }
 
-        /* ── Room ── */
         .room-wrap {
             flex: 1;
             overflow-y: auto;
-            padding: 32px 28px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 32px;
         }
 
-        /* Podium */
-        .podium {
-            width: 160px;
-            height: 36px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 500;
+        .section-label {
+            font-size: 10px;
+            font-weight: 600;
             letter-spacing: 0.1em;
             text-transform: uppercase;
             color: var(--text-muted);
+            align-self: flex-start;
+            margin-bottom: 10px;
         }
 
-        /* Rows */
-        .rows {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
+        .section-divider {
             width: 100%;
             max-width: 900px;
+            border: none;
+            border-top: 1px dashed rgba(255, 255, 255, 0.07);
+            margin: 18px 0;
         }
 
         .row {
             display: flex;
             align-items: center;
-            gap: 10px;
-            justify-content: center;
+            gap: 8px;
+            margin-bottom: 7px;
         }
 
         .row-label {
-            width: 24px;
-            font-size: 11px;
+            width: 22px;
+            font-size: 10px;
+            font-weight: 500;
             color: var(--text-muted);
             text-align: right;
             flex-shrink: 0;
@@ -223,32 +213,28 @@
 
         .seats {
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
+            gap: 5px;
         }
 
-        /* ── Seat ── */
         .seat {
-            width: 64px;
-            height: 64px;
-            border-radius: 8px;
-            border: 1.5px solid var(--empty-border);
+            width: 54px;
+            height: 54px;
+            border-radius: 7px;
+            border: 1.5px solid rgba(255, 255, 255, 0.08);
             background: var(--empty);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
-            cursor: default;
-            transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+            gap: 2px;
             position: relative;
+            transition: background 350ms ease, border-color 350ms ease;
             overflow: hidden;
         }
 
         .seat.present {
             background: var(--present);
-            border-color: var(--present-border);
+            border-color: rgba(255, 255, 255, 0.18);
         }
 
         .seat.voted-yes {
@@ -267,78 +253,77 @@
         }
 
         .seat-icon {
-            font-size: 20px;
+            font-size: 17px;
             line-height: 1;
         }
 
-        .seat-name {
+        .seat-id {
             font-size: 9px;
             font-weight: 500;
             color: var(--text-muted);
-            text-align: center;
-            max-width: 58px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            padding: 0 4px;
         }
 
-        .seat.present .seat-name,
-        .seat.voted-yes .seat-name,
-        .seat.voted-no .seat-name,
-        .seat.voted-abstain .seat-name {
-            color: var(--text);
+        .seat.present .seat-id,
+        .seat.voted-yes .seat-id,
+        .seat.voted-no .seat-id,
+        .seat.voted-abstain .seat-id {
+            color: rgba(255, 255, 255, 0.55);
         }
 
-        .seat-vote-label {
+        .seat-name-label {
             position: absolute;
-            bottom: 4px;
+            bottom: 2px;
             left: 0;
             right: 0;
             text-align: center;
-            font-size: 8px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
+            font-size: 7px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.5);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 3px;
         }
 
-        .seat.voted-yes .seat-vote-label {
-            color: var(--yes);
-        }
-
-        .seat.voted-no .seat-vote-label {
-            color: var(--no);
-        }
-
-        .seat.voted-abstain .seat-vote-label {
-            color: var(--abstain);
-        }
-
-        /* flash animation on vote */
         @keyframes flash {
             0% {
-                opacity: 1;
-                transform: scale(1.12);
+                transform: scale(1.14)
             }
 
             100% {
-                opacity: 1;
-                transform: scale(1);
+                transform: scale(1)
             }
         }
 
         .seat.flash {
-            animation: flash 400ms ease-out;
+            animation: flash 350ms cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* ── No vote state ── */
-        .no-vote {
-            flex: 1;
+        .podium-wrap {
+            margin-top: 20px;
+        }
+
+        .podium {
+            width: 180px;
+            height: 36px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .no-vote-msg {
             color: var(--text-muted);
             font-size: 14px;
+            padding: 60px 0;
         }
     </style>
 </head>
@@ -347,33 +332,38 @@
 
     <div class="header">
         <div class="header-left">
-            <div class="ws-dot" id="wsDot"></div>
-            <span class="vote-title" id="voteTitle">Waiting for vote...</span>
+            <div class="ws-indicator">
+                <div class="ws-dot" id="wsDot"></div>
+                <span id="wsLabel">Connecting...</span>
+            </div>
+            <span class="room-label">Ba94</span>
+            <span class="vote-title" id="voteTitle">No active vote</span>
         </div>
         <div class="legend">
             <div class="legend-item">
-                <div class="legend-dot" style="background:#2a2d35;border:1px solid rgba(255,255,255,0.1)"></div> Empty
+                <div class="legend-dot" style="background:var(--empty);border:1px solid rgba(255,255,255,0.1)"></div>
+                Empty
             </div>
             <div class="legend-item">
-                <div class="legend-dot" style="background:#3a3d48"></div> Present
+                <div class="legend-dot" style="background:var(--present)"></div>Present
             </div>
             <div class="legend-item">
-                <div class="legend-dot" style="background:var(--yes)"></div> Yes
+                <div class="legend-dot" style="background:var(--yes)"></div>Yes
             </div>
             <div class="legend-item">
-                <div class="legend-dot" style="background:var(--no)"></div> No
+                <div class="legend-dot" style="background:var(--no)"></div>No
             </div>
             <div class="legend-item">
-                <div class="legend-dot" style="background:var(--abstain)"></div> Abstain
+                <div class="legend-dot" style="background:var(--abstain)"></div>Abstain
             </div>
         </div>
     </div>
 
     <div class="tally" id="tally" style="display:none">
         <div class="tally-bar-wrap">
-            <div class="tally-seg" id="barYes" style="background:var(--yes);width:0%"></div>
-            <div class="tally-seg" id="barNo" style="background:var(--no);width:0%"></div>
-            <div class="tally-seg" id="barAbstain" style="background:var(--abstain);width:0%"></div>
+            <div class="tally-seg" id="barYes" style="background:var(--yes)"></div>
+            <div class="tally-seg" id="barNo" style="background:var(--no)"></div>
+            <div class="tally-seg" id="barAbstain" style="background:var(--abstain)"></div>
         </div>
         <div class="tally-counts">
             <div class="tally-count">
@@ -388,131 +378,155 @@
                 <span style="color:var(--abstain)">Abstain</span>
                 <span class="tally-num" id="countAbstain" style="color:var(--abstain)">0</span>
             </div>
+            <div class="tally-count" style="margin-left:6px;border-left:1px solid var(--border);padding-left:14px">
+                <span style="color:var(--text-muted)">Total</span>
+                <span class="tally-num" id="countTotal" style="color:var(--text-muted)">0</span>
+            </div>
         </div>
     </div>
 
     <div class="room-wrap" id="roomWrap">
-        <div class="no-vote" id="noVote">No active vote.</div>
+        <p class="no-vote-msg" id="noVoteMsg">Waiting for a vote to start...</p>
     </div>
 
     <script>
-        // ── Config ────────────────────────────────────────────────
-        const ROWS = 6        // number of rows
-        const SEATS_PER_ROW = 8  // seats per row
-        const ROW_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+        // ── Room layout matching Ba94 floor plan ──────────────────
+        // Top section: 5 rows of varying width
+        // Bottom section: 6 rows of 12
+        const LAYOUT = [
+            // Top section (front of room)
+            { row: 'A', seats: 10 },
+            { row: 'B', seats: 10 },
+            { row: 'C', seats: 10 },
+            { row: 'D', seats: 10 },
+            { row: 'E', seats: 10 },
+            // Bottom section
+            { row: 'F', seats: 12 },
+            { row: 'G', seats: 12 },
+            { row: 'H', seats: 12 },
+            { row: 'I', seats: 12 },
+            { row: 'J', seats: 12 },
+            { row: 'K', seats: 12 },
+        ]
+
+        const BOTTOM_START = 'F'
 
         // ── State ─────────────────────────────────────────────────
-        // seat key = "A1", "A2", etc.
-        const seats = {}  // { [key]: { name: string|null, vote: 'Yes'|'No'|'Abstain'|null } }
-
-        // init all seats as empty
-        for (let r = 0; r < ROWS; r++) {
-            for (let s = 1; s <= SEATS_PER_ROW; s++) {
-                const key = ROW_LABELS[r] + s
-                seats[key] = { name: null, vote: null }
+        const seatState = {}
+        LAYOUT.forEach(({ row, seats }) => {
+            for (let i = 1; i <= seats; i++) {
+                seatState[row + i] = { name: null, vote: null }
             }
-        }
+        })
 
-        let voteActive = false
-
-        // ── DOM refs ──────────────────────────────────────────────
-        const wsDot = document.getElementById('wsDot')
-        const voteTitle = document.getElementById('voteTitle')
-        const tally = document.getElementById('tally')
-        const roomWrap = document.getElementById('roomWrap')
-        const noVote = document.getElementById('noVote')
-
-        // ── Build room grid ───────────────────────────────────────
+        // ── Build DOM ─────────────────────────────────────────────
         function buildRoom() {
-            noVote.remove()
-            roomWrap.innerHTML = ''
+            const wrap = document.getElementById('roomWrap')
+            wrap.innerHTML = ''
 
-            const podium = document.createElement('div')
-            podium.className = 'podium'
-            podium.textContent = 'Podium'
-            roomWrap.appendChild(podium)
+            let sectionStarted = false
 
-            const rowsEl = document.createElement('div')
-            rowsEl.className = 'rows'
+            LAYOUT.forEach(({ row, seats }) => {
+                // Insert divider before bottom section
+                if (row === BOTTOM_START && !sectionStarted) {
+                    sectionStarted = true
+                    const hr = document.createElement('hr')
+                    hr.className = 'section-divider'
+                    wrap.appendChild(hr)
 
-            for (let r = 0; r < ROWS; r++) {
+                    const lbl = document.createElement('div')
+                    lbl.className = 'section-label'
+                    lbl.textContent = 'Main section — 12 seats per row'
+                    wrap.appendChild(lbl)
+                }
+
+                if (row === 'A') {
+                    const lbl = document.createElement('div')
+                    lbl.className = 'section-label'
+                    lbl.textContent = 'Back section'
+                    wrap.appendChild(lbl)
+                }
+
                 const rowEl = document.createElement('div')
                 rowEl.className = 'row'
 
                 const label = document.createElement('div')
                 label.className = 'row-label'
-                label.textContent = ROW_LABELS[r]
+                label.textContent = row
                 rowEl.appendChild(label)
 
                 const seatsEl = document.createElement('div')
                 seatsEl.className = 'seats'
 
-                for (let s = 1; s <= SEATS_PER_ROW; s++) {
-                    const key = ROW_LABELS[r] + s
-                    const seat = document.createElement('div')
-                    seat.className = 'seat'
-                    seat.id = `seat-${key}`
-                    seat.innerHTML = `
+                for (let i = 1; i <= seats; i++) {
+                    const id = row + i
+                    const el = document.createElement('div')
+                    el.className = 'seat'
+                    el.id = 'seat-' + id
+                    el.innerHTML = `
           <div class="seat-icon">🪑</div>
-          <div class="seat-name">${key}</div>
-          <div class="seat-vote-label"></div>
+          <div class="seat-id">${id}</div>
+          <div class="seat-name-label"></div>
         `
-                    seatsEl.appendChild(seat)
+                    seatsEl.appendChild(el)
                 }
 
                 rowEl.appendChild(seatsEl)
-                rowsEl.appendChild(rowEl)
-            }
+                wrap.appendChild(rowEl)
+            })
 
-            roomWrap.appendChild(rowsEl)
+            const podiumWrap = document.createElement('div')
+            podiumWrap.className = 'podium-wrap'
+            podiumWrap.innerHTML = `<div class="podium">💻 Podium</div>`
+            wrap.appendChild(podiumWrap)
         }
 
-        // ── Update a single seat ──────────────────────────────────
-        function updateSeat(key) {
-            const el = document.getElementById(`seat-${key}`)
+        // ── Render one seat ───────────────────────────────────────
+        function updateSeat(id) {
+            const el = document.getElementById('seat-' + id)
             if (!el) return
-            const { name, vote } = seats[key]
+            const { name, vote } = seatState[id]
 
-            // classes
             el.className = 'seat'
             if (vote === 'Yes') el.classList.add('voted-yes')
             else if (vote === 'No') el.classList.add('voted-no')
             else if (vote === 'Abstain') el.classList.add('voted-abstain')
             else if (name) el.classList.add('present')
 
-            // icon
             const icon = el.querySelector('.seat-icon')
-            if (vote) icon.textContent = vote === 'Yes' ? '✅' : vote === 'No' ? '❌' : '➖'
+            if (vote === 'Yes') icon.textContent = '✅'
+            else if (vote === 'No') icon.textContent = '❌'
+            else if (vote === 'Abstain') icon.textContent = '➖'
             else if (name) icon.textContent = '👤'
             else icon.textContent = '🪑'
 
-            // name
-            el.querySelector('.seat-name').textContent = name ?? key
-
-            // vote label
-            el.querySelector('.seat-vote-label').textContent = vote ?? ''
+            el.querySelector('.seat-id').textContent = id
+            el.querySelector('.seat-name-label').textContent = name ?? ''
         }
 
-        // flash effect when someone votes
-        function flashSeat(key) {
-            const el = document.getElementById(`seat-${key}`)
+        function flashSeat(id) {
+            const el = document.getElementById('seat-' + id)
             if (!el) return
             el.classList.remove('flash')
-            void el.offsetWidth // reflow
+            void el.offsetWidth
             el.classList.add('flash')
         }
 
-        // ── Update tally bar ──────────────────────────────────────
+        // ── Tally ─────────────────────────────────────────────────
         function updateTally(results) {
-            const total = (results.Yes ?? 0) + (results.No ?? 0) + (results.Abstain ?? 0)
-            const pct = (n) => total ? Math.round((n / total) * 100) : 0
+            const y = results.Yes ?? 0
+            const n = results.No ?? 0
+            const a = results.Abstain ?? 0
+            const total = y + n + a
+            const pct = v => total ? Math.round(v / total * 100) : 0
 
-            document.getElementById('countYes').textContent = results.Yes ?? 0
-            document.getElementById('countNo').textContent = results.No ?? 0
-            document.getElementById('countAbstain').textContent = results.Abstain ?? 0
-            document.getElementById('barYes').style.width = pct(results.Yes ?? 0) + '%'
-            document.getElementById('barNo').style.width = pct(results.No ?? 0) + '%'
-            document.getElementById('barAbstain').style.width = pct(results.Abstain ?? 0) + '%'
+            document.getElementById('countYes').textContent = y
+            document.getElementById('countNo').textContent = n
+            document.getElementById('countAbstain').textContent = a
+            document.getElementById('countTotal').textContent = total
+            document.getElementById('barYes').style.width = pct(y) + '%'
+            document.getElementById('barNo').style.width = pct(n) + '%'
+            document.getElementById('barAbstain').style.width = pct(a) + '%'
         }
 
         // ── WebSocket ─────────────────────────────────────────────
@@ -521,76 +535,65 @@
             const ws = new WebSocket(`${proto}://${location.host}/ws`)
 
             ws.onopen = () => {
-                wsDot.className = 'ws-dot connected'
+                document.getElementById('wsDot').className = 'ws-dot connected'
+                document.getElementById('wsLabel').textContent = 'Live'
                 ws.send(JSON.stringify({ type: 'IDENTIFY', role: 'room' }))
             }
 
             ws.onclose = () => {
-                wsDot.className = 'ws-dot disconnected'
+                document.getElementById('wsDot').className = 'ws-dot disconnected'
+                document.getElementById('wsLabel').textContent = 'Reconnecting...'
                 setTimeout(connect, 3000)
             }
 
-            ws.onmessage = ({ data }) => {
-                const msg = JSON.parse(data)
-                handle(msg)
-            }
+            ws.onmessage = ({ data }) => handle(JSON.parse(data))
         }
 
         function handle(msg) {
             switch (msg.type) {
 
-                // a member scanned their QR and connected to a seat
-                case 'SEAT_JOINED':
-                    // msg: { seat_id: "A3", name: "Marie Dupont" }
-                    seats[msg.seat_id].name = msg.name
-                    seats[msg.seat_id].vote = null
-                    updateSeat(msg.seat_id)
-                    break
-
-                // vote started
                 case 'VOTE_STARTED':
-                    // msg: { vote_id, title }
-                    voteActive = true
-                    voteTitle.textContent = msg.title
-                    tally.style.display = 'flex'
-                    // reset all votes
-                    Object.keys(seats).forEach(k => { seats[k].vote = null; updateSeat(k) })
-                    buildRoom()
-                    // re-render seats with current presence
-                    Object.keys(seats).forEach(k => updateSeat(k))
+                    document.getElementById('voteTitle').textContent = msg.title
+                    document.getElementById('tally').style.display = 'flex'
+                    Object.keys(seatState).forEach(id => { seatState[id].vote = null; updateSeat(id) })
                     updateTally({ Yes: 0, No: 0, Abstain: 0 })
                     break
 
-                // someone voted — per-seat update
-                case 'SEAT_VOTED':
-                    // msg: { seat_id: "A3", vote: "Yes", results: { Yes: n, No: n, Abstain: n } }
-                    seats[msg.seat_id].vote = msg.vote
-                    updateSeat(msg.seat_id)
-                    flashSeat(msg.seat_id)
-                    updateTally(msg.results)
-                    break
-
-                // president closed the vote
-                case 'VOTE_CLOSED':
-                    // msg: { results: { Yes, No, Abstain } }
-                    voteActive = false
-                    voteTitle.textContent = voteTitle.textContent + ' — Closed'
-                    updateTally(msg.results)
-                    break
-
-                // full state sync (useful on reconnect)
-                case 'ROOM_STATE':
-                    // msg: { vote: { title } | null, seats: { "A1": { name, vote } }, results }
-                    if (msg.vote) {
-                        voteTitle.textContent = msg.vote.title
-                        tally.style.display = 'flex'
-                        buildRoom()
+                case 'SEAT_JOINED':
+                    // { seat_id: "A3", name: "Marie Dupont" }
+                    if (seatState[msg.seat_id]) {
+                        seatState[msg.seat_id].name = msg.name
+                        updateSeat(msg.seat_id)
                     }
-                    Object.entries(msg.seats ?? {}).forEach(([key, data]) => {
-                        if (seats[key]) {
-                            seats[key].name = data.name
-                            seats[key].vote = data.vote
-                            updateSeat(key)
+                    break
+
+                case 'SEAT_VOTED':
+                    // { seat_id: "A3", vote: "Yes", results: { Yes, No, Abstain } }
+                    if (seatState[msg.seat_id]) {
+                        seatState[msg.seat_id].vote = msg.vote
+                        updateSeat(msg.seat_id)
+                        flashSeat(msg.seat_id)
+                    }
+                    updateTally(msg.results)
+                    break
+
+                case 'VOTE_CLOSED':
+                    document.getElementById('voteTitle').textContent += ' — Closed'
+                    updateTally(msg.results)
+                    break
+
+                case 'ROOM_STATE':
+                    // sent by backend on connect to sync current state
+                    // { vote: { title } | null, seats: { "A3": { name, vote } }, results }
+                    if (msg.vote) {
+                        document.getElementById('voteTitle').textContent = msg.vote.title
+                        document.getElementById('tally').style.display = 'flex'
+                    }
+                    Object.entries(msg.seats ?? {}).forEach(([id, data]) => {
+                        if (seatState[id]) {
+                            seatState[id].name = data.name
+                            seatState[id].vote = data.vote
+                            updateSeat(id)
                         }
                     })
                     if (msg.results) updateTally(msg.results)
@@ -598,7 +601,6 @@
             }
         }
 
-        // ── Init ──────────────────────────────────────────────────
         buildRoom()
         connect()
     </script>
