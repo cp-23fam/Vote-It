@@ -97,8 +97,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import { useVoteStore } from '../stores/vote.mock'
-// import { useVoteStore } from '../stores/vote'
+import { useVoteStore } from '../stores/vote'
 
 const store = useVoteStore()
 const router = useRouter()

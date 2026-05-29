@@ -27,7 +27,11 @@ VALUES (
 );`, [title, duration]
   );
 
-  res.status(200).json(result.rows[0])
+
+  const id = result.rows.insertId
+  const created = await db.query("SELECT * FROM systeme_vote.seance WHERE id = ?", [id])
+
+  res.status(200).json(created)
 })
 
 router.get('/close', async (req, res) => {
@@ -38,6 +42,8 @@ router.get('/close', async (req, res) => {
 SET fin_seance = FROM_UNIXTIME(UNIX_TIMESTAMP() - 1)
 WHERE id = ?`, [current.id]
   );
+
+  await db.query("DELETE FROM `systeme_vote`.`siege` WHERE id > 0;")
 
   res.status(200).json(result.rows[0])
 })

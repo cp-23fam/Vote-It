@@ -4,6 +4,6 @@ import App from './App.vue'
 import router from './router'
 import './style.css'
 
-import './stores/vote.mock.js'
+import './stores/vote.js'
 
 createApp(App).use(createPinia()).use(router).mount('#app')

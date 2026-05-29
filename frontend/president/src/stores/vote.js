@@ -58,13 +58,18 @@ export const useVoteStore = defineStore('vote', () => {
 
   // ── API ────────────────────────────────────────────────────
   async function createVote(title, duration) {
-    const res = await fetch('/api/votes', {
+    const content = JSON.stringify({ "title": title, "duration": duration })
+
+    const res = await fetch('http://localhost:3000/seances', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, duration }),
+      body: content
     })
-    if (!res.ok) throw new Error((await res.json()).message)
+
+    // if (!res.ok) throw new Error((await res.json()).message)
+
     const data = await res.json()
+
     vote.value = data.vote
     results.value = { Yes: 0, No: 0, Abstain: 0 }
     if (duration) startTimer(duration)
@@ -72,7 +77,7 @@ export const useVoteStore = defineStore('vote', () => {
   }
 
   async function closeVote() {
-    const res = await fetch(`/api/votes/${vote.value.id}/close`, { method: 'POST' })
+    const res = await fetch(`http://localhost:3000/seances/close`, { method: 'POST' })
     if (!res.ok) throw new Error((await res.json()).message)
     const data = await res.json()
     vote.value = data.vote
@@ -82,7 +87,7 @@ export const useVoteStore = defineStore('vote', () => {
   }
 
   async function fetchActive() {
-    const res = await fetch('/api/votes/active')
+    const res = await fetch('http://localhost:3000/seances')
     if (res.status === 404) {
       vote.value = null
       return null
