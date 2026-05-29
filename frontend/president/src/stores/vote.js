@@ -42,13 +42,16 @@ export const useVoteStore = defineStore('vote', () => {
   }
 
   // ── Timer ──────────────────────────────────────────────────
-  function startTimer(seconds) {
-    timerLeft.value = seconds
+  function startTimer(endsAt) {
     stopTimer()
     timerInterval = setInterval(() => {
-      if (timerLeft.value > 0) timerLeft.value--
-      else stopTimer()
-    }, 1000)
+      const left = Math.round((new Date(endsAt) - Date.now()) / 1000)
+      if (left > 0) timerLeft.value = left
+      else {
+        timerLeft.value = 0
+        stopTimer()
+      }
+    }, 500)
   }
 
   function stopTimer() {
@@ -58,12 +61,12 @@ export const useVoteStore = defineStore('vote', () => {
 
   // ── API ────────────────────────────────────────────────────
   async function createVote(title, duration) {
-    const content = JSON.stringify({ "title": title, "duration": duration })
+    const content = JSON.stringify({ title: title, duration: duration })
 
     const res = await fetch('http://localhost:3000/seances', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: content
+      body: content,
     })
 
     // if (!res.ok) throw new Error((await res.json()).message)
