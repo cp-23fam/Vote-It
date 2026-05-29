@@ -23,7 +23,7 @@ CREATE TABLE siege (
     id_utilisateur INT NOT NULL,
     id_seance INT NOT NULL,
     place VARCHAR(50) NOT NULL,
-    vote ENUM('oui', 'non', 'neutre') NOT NULL DEFAULT 'neutre',
+    vote ENUM('oui', 'non', 'neutre'),
 
     CONSTRAINT fk_siege_utilisateur
         FOREIGN KEY (id_utilisateur)

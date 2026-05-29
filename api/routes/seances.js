@@ -3,14 +3,14 @@ const router = express.Router();
 const db = require('../db');
 
 async function getCurrent() {
-  const result = await db.query(`SELECT * FROM systeme_vote.seance WHERE fin_seance > UNIX_TIMESTAMP();`)
+  const result = await db.query(`SELECT * FROM systeme_vote.seance WHERE fin_seance > now() ORDER BY fin_seance DESC;`)
 
   return result.rows[0]
 }
 
 router.get("/", async (req, res) => {
 
-  const result = getCurrent()
+  const result = await getCurrent()
 
   res.status(200).json(result)
 })
