@@ -1,9 +1,13 @@
 <template>
   <div class="page">
     <div class="card">
-      <h2>Waiting Room</h2>
+      <h2>Too late!</h2>
 
-      <p>Awaiting a new vote.</p>
+      <p>You took too long to vote.</p>
+
+      <button @click="backToWaiting">
+        Back
+      </button>
     </div>
   </div>
 </template>
@@ -13,8 +17,8 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-const goToVote = () => {
-  router.push('/vote')
+const backToWaiting = () => {
+  router.push('/waiting')
 }
 </script>
 

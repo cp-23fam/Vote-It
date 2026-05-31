@@ -1,9 +1,15 @@
 <template>
   <div class="page">
     <div class="card">
-      <h2>Waiting Room</h2>
+      <h2>Vote starting...</h2>
 
-      <p>Awaiting a new vote.</p>
+      <div class="timer">
+        10
+      </div>
+
+      <button @click="goToVote">
+        Go vote
+      </button>
     </div>
   </div>
 </template>
@@ -35,11 +41,8 @@ const goToVote = () => {
   text-align: center;
 }
 
-button {
-  margin-top: 20px;
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
+.timer {
+  font-size: 60px;
+  margin: 20px 0;
 }
 </style>

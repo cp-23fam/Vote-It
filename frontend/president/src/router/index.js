@@ -1,8 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [],
+export default createRouter({
+  history: createWebHistory(),
+  routes: [
+    { path: '/', name: 'Vote', component: () => import('../views/VoteView.vue') },
+    { path: '/results/:id', name: 'Results', component: () => import('../views/ResultsView.vue') },
+    { path: '/:pathMatch(.*)*', redirect: '/' },
+  ],
 })
-
-export default router
