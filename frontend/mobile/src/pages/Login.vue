@@ -26,7 +26,6 @@
 
       <p>
         Don't have an account?
-
         <a href="#" @click.prevent="goToRegister">
           Sign up
         </a>
@@ -37,7 +36,6 @@
 </template>
 
 <script setup>
-import axios from 'axios'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -47,40 +45,28 @@ const email = ref('')
 const password = ref('')
 const error = ref('')
 
-const login = async () => {
+const getUsers = () => {
+  return JSON.parse(localStorage.getItem('users') || '[]')
+}
 
-  try {
+const login = () => {
+  error.value = ''
 
-    error.value = ''
+  const users = getUsers()
 
-    const response = await axios.post(
-      'http://localhost:3000/login',
-      {
-        email: email.value,
-        password: password.value,
-      }
-    )
+  const user = users.find(
+    u => u.email === email.value && u.password === password.value
+  )
 
-    console.log(response.data)
-
-    localStorage.setItem(
-      'token',
-      response.data.token
-    )
-
-    localStorage.setItem(
-      'user',
-      JSON.stringify(response.data.utilisateur)
-    )
-
-    router.push('/waiting')
-
-  } catch (err) {
-
-    console.error(err)
-
+  if (!user) {
     error.value = 'Invalid email or password'
+    return
   }
+
+  localStorage.setItem('user', JSON.stringify(user))
+  localStorage.setItem('token', 'fake-token-' + user.id)
+
+  router.push('/waiting')
 }
 
 const goToRegister = () => {
@@ -102,7 +88,6 @@ const goToRegister = () => {
   padding: 30px;
   border-radius: 15px;
   width: 300px;
-
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -117,16 +102,16 @@ input {
 
 button {
   padding: 10px;
-  border: none;
   border-radius: 8px;
+  border: none;
   cursor: pointer;
-}
-
-a {
-  color: blue;
 }
 
 .error {
   color: red;
+}
+
+a {
+  color: blue;
 }
 </style>
