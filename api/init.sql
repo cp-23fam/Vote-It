@@ -21,7 +21,6 @@ CREATE TABLE seance (
 CREATE TABLE siege (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_utilisateur INT NOT NULL,
-    id_seance INT NOT NULL,
     place VARCHAR(50) NOT NULL,
     vote ENUM('oui', 'non', 'neutre'),
 
@@ -31,12 +30,6 @@ CREATE TABLE siege (
         ON DELETE CASCADE
         ON UPDATE CASCADE,
 
-    CONSTRAINT fk_siege_seance
-        FOREIGN KEY (id_seance)
-        REFERENCES seance(id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT uq_seance_place UNIQUE (id_seance, place),
-    CONSTRAINT uq_seance_utilisateur UNIQUE (id_seance, id_utilisateur)
+    CONSTRAINT uq_seance_place UNIQUE (place),
+    CONSTRAINT uq_seance_utilisateur UNIQUE (id_utilisateur)
 ) ENGINE=InnoDB;

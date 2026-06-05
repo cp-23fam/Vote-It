@@ -11,7 +11,11 @@ const bodyParser = require("body-parser");
 const { initWS } = require("./ws");
 
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors(
+    {
+        allowedHeaders: '*',
+    }
+));
 
 app.use("/user", utilisateurRoutes);
 app.use("/sieges", siegeRoutes);
@@ -25,5 +29,5 @@ initWS(server);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`listening on http://localhost:${PORT}`);
+    console.log(`listening on http://localhost:${PORT}`);
 });

@@ -43,7 +43,7 @@ export const useVoteStore = defineStore('vote', () => {
 
     const proto = location.protocol === 'https:' ? 'wss' : 'ws'
     // En dev Vite proxifie /ws → localhost:3000/ws
-    ws = new WebSocket(`${proto}://${location.host}/ws`)
+    ws = new WebSocket(`${proto}://localhost:3000/ws`)
 
     ws.onopen = () => {
       wsConnected.value = true
@@ -66,7 +66,7 @@ export const useVoteStore = defineStore('vote', () => {
     ws.onmessage = ({ data }) => {
       try {
         handleMessage(JSON.parse(data))
-      } catch (_) {}
+      } catch (_) { }
     }
   }
 

@@ -2,7 +2,20 @@ const jwt = require('jsonwebtoken');
 const db = require('../db');
 
 exports.login = (req, res, next) => {
-  const auth = req.get("Authorization");
+  const cookieHeader = req.headers.cookie
+  if (!cookieHeader) {
+    return res.status(401).json({ message: 'No cookie found' })
+  }
+
+  // Extraction du token depuis les cookies
+  const cookies = Object.fromEntries(
+    cookieHeader.split('; ').map(cookie => {
+      const [key, ...value] = cookie.split('=')
+      return [key.trim(), value.join('=')]
+    })
+  )
+
+  const auth = cookies['Authorization']
 
   if (!auth) {
     return res.status(403).json({ error: "No Header found" })
@@ -13,7 +26,6 @@ exports.login = (req, res, next) => {
 
     const user = jwt.verify(token, process.env['JWT_SECRET'])
     req.user = user
-    console.log(user);
 
     next();
 

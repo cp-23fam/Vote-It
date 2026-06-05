@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 const { login } = require("../middleware/auth");
-const { notifySeatJoined, notifySeatVoted } = require("../ws");
+const { notifySeatVoted } = require("../ws");
 
 async function getCurrent() {
   const result = await db.query(
@@ -12,18 +12,14 @@ async function getCurrent() {
 }
 
 // POST /sieges/link/:place — associer un utilisateur à une place
-router.post("/link/:place", login, async (req, res) => {
-  const current = await getCurrent();
-  if (!current) {
-    return res.status(404).json({ error: "Aucune séance active" });
-  }
+router.get("/link/:place", login, async (req, res) => {
 
-  const place = req.params.place;
+  const place = req.params.place
 
   // Vérifier si la place est déjà prise
   const { rows: existing } = await db.query(
-    `SELECT id FROM siege WHERE id_seance = ? AND place = ?`,
-    [current.id, place],
+    `SELECT id FROM siege WHERE place = ?`,
+    [place],
   );
   if (existing.length > 0) {
     return res.status(409).json({ error: "Place déjà occupée" });
@@ -31,22 +27,19 @@ router.post("/link/:place", login, async (req, res) => {
 
   // Vérifier si l'utilisateur a déjà une place dans cette séance
   const { rows: userSeat } = await db.query(
-    `SELECT id FROM siege WHERE id_seance = ? AND id_utilisateur = ?`,
-    [current.id, req.user.id],
+    `SELECT id FROM siege WHERE id_utilisateur = ?`,
+    [req.user.id],
   );
   if (userSeat.length > 0) {
     return res.status(409).json({ error: "Utilisateur déjà assis" });
   }
 
   await db.query(
-    `INSERT INTO siege (id_utilisateur, id_seance, place) VALUES (?, ?, ?)`,
-    [req.user.id, current.id, place],
+    `INSERT INTO siege (id_utilisateur, place) VALUES (?, ?)`,
+    [req.user.id, place],
   );
 
-  // Notifier via WebSocket
-  notifySeatJoined(place, req.user, current.id);
-
-  res.status(201).json({ place, seance_id: current.id });
+  res.status(201).json({ place });
 });
 
 // POST /sieges/vote — enregistrer un vote

@@ -60,7 +60,7 @@ const register = async () => {
     error.value = ''
 
     await axios.post(
-      'http://localhost:3000/signup',
+      'http://localhost:3000/user/signup',
       {
         name: name.value,
         surname: surname.value,

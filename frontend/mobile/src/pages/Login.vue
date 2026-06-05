@@ -48,37 +48,30 @@ const password = ref('')
 const error = ref('')
 
 const login = async () => {
-
   try {
-
     error.value = ''
-
     const response = await axios.post(
-      'http://localhost:3000/login',
+      'http://localhost:3000/user/login',
       {
         email: email.value,
         password: password.value,
       }
     )
-
     console.log(response.data)
 
-    localStorage.setItem(
-      'token',
-      response.data.token
-    )
+    // Stockage du token dans un cookie Authorization
+    const token = response.data.token
+    const expires = new Date()
+    expires.setDate(expires.getDate() + 1) // Expiration dans 7 jours
+    document.cookie = `Authorization=Bearer ${token}; expires=${expires.toUTCString()}; path=/; domain=localhost;`
 
     localStorage.setItem(
       'user',
       JSON.stringify(response.data.utilisateur)
     )
-
     router.push('/waiting')
-
   } catch (err) {
-
     console.error(err)
-
     error.value = 'Invalid email or password'
   }
 }
